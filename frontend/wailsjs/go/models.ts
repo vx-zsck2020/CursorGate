@@ -198,6 +198,27 @@ export namespace mux {
 
 }
 
+export namespace store {
+	
+	export class Prefs {
+	    theme: string;
+	    closeAction: string;
+	    rememberClose: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Prefs(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.theme = source["theme"];
+	        this.closeAction = source["closeAction"];
+	        this.rememberClose = source["rememberClose"];
+	    }
+	}
+
+}
+
 export namespace update {
 	
 	export class Status {
@@ -226,27 +247,6 @@ export namespace update {
 	        this.sha256 = source["sha256"];
 	        this.available = source["available"];
 	        this.error = source["error"];
-	    }
-	}
-
-}
-
-export namespace store {
-	
-	export class Prefs {
-	    theme: string;
-	    closeAction: string;
-	    rememberClose: boolean;
-	
-	    static createFrom(source: any = {}) {
-	        return new Prefs(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.theme = source["theme"];
-	        this.closeAction = source["closeAction"];
-	        this.rememberClose = source["rememberClose"];
 	    }
 	}
 
