@@ -35,6 +35,24 @@ function applyTheme(theme: string) {
     document.body.setAttribute('theme-mode', theme === 'light' ? 'light' : 'dark')
 }
 
+function gatewayPort(addr?: string): string {
+    if (!addr) return '—'
+    const i = addr.lastIndexOf(':')
+    if (i >= 0 && i < addr.length - 1) {
+        return addr.slice(i + 1)
+    }
+    return addr
+}
+
+function cursorCompatText(cs: Dashboard['cursor'] | undefined): string {
+    const current = cs?.version || '未知'
+    const target = cs?.compatibleVersion || '3.23.23'
+    if (cs?.compatible) {
+        return current === target ? `Cursor ${current} 已适配` : `Cursor ${current} 已适配（${target}）`
+    }
+    return `Cursor ${current} 未适配（已适配 ${target}）`
+}
+
 function App() {
     const [dash, setDash] = useState<Dashboard | null>(null)
     const [selected, setSelected] = useState<string>('')
@@ -285,37 +303,10 @@ function App() {
     const gw = dash?.gateway
     const cs = dash?.cursor
     const models = current?.models ?? []
-    const compatibleVersion = cs?.compatibleVersion || '3.23.23'
+    const gwOk = !!gw?.running
 
     return (
         <div className="app-shell">
-            <header className="topbar">
-                <div className="brand">
-                    <Typography.Title heading={6} style={{margin: 0}}>
-                        CursorGate - Cursor自定义API助手
-                    </Typography.Title>
-                    <Typography.Text type="tertiary" size="small">
-                        适配 Cursor {compatibleVersion}
-                    </Typography.Text>
-                </div>
-                <Space>
-                    <Button
-                        theme="borderless"
-                        type="tertiary"
-                        icon={theme === 'light' ? <IconMoon/> : <IconSun/>}
-                        onClick={switchTheme}
-                    >
-                        {theme === 'light' ? '暗色' : '亮色'}
-                    </Button>
-                    <Button theme="light" type="tertiary" loading={busy === 'restore'} onClick={restore}>
-                        一键恢复
-                    </Button>
-                    <Button theme="solid" type="primary" loading={busy === 'apply'} onClick={apply}>
-                        同步到 Cursor
-                    </Button>
-                </Space>
-            </header>
-
             <div className="body">
                 <aside className="sidebar">
                     <div className="sidebar-head">
@@ -359,7 +350,26 @@ function App() {
                     </div>
                 </aside>
 
-                <main className="main">
+                <div className="content">
+                    <header className="topbar">
+                        <Space>
+                            <Button
+                                theme="borderless"
+                                type="tertiary"
+                                icon={theme === 'light' ? <IconMoon/> : <IconSun/>}
+                                onClick={switchTheme}
+                            >
+                                {theme === 'light' ? '暗色' : '亮色'}
+                            </Button>
+                            <Button theme="light" type="tertiary" loading={busy === 'restore'} onClick={restore}>
+                                一键恢复
+                            </Button>
+                            <Button theme="solid" type="primary" loading={busy === 'apply'} onClick={apply}>
+                                同步到 Cursor
+                            </Button>
+                        </Space>
+                    </header>
+                    <main className="main">
                     <section className="editor">
                         <Typography.Text type="tertiary" size="small" className="section-title">
                             {form.id ? '编辑 API' : '新建 API'}
@@ -446,30 +456,25 @@ function App() {
                             ) : null}
                         </div>
                     </section>
-                </main>
+                    </main>
+                </div>
             </div>
 
             <footer className="footer">
                 <div className="status-cell">
-                    <span className={'dot ' + (gw?.running ? 'on' : 'off')}/>
+                    <span className={'dot ' + (gwOk ? 'on' : 'off')}/>
                     <Typography.Text type="tertiary" size="small">
-                        合流 {gw?.running ? gw.addr : (gw?.error || '未启动')}
+                        网关:{gw?.port || gatewayPort(gw?.addr)} {gwOk ? '正常' : '异常'}
                     </Typography.Text>
                 </div>
                 <div className="status-cell">
                     <span className={'dot ' + (cs?.compatible ? 'on' : 'warn')}/>
                     <Typography.Text type="tertiary" size="small">
-                        Cursor {cs?.version || '未知'} {cs?.compatible ? '已适配' : '未适配'}
+                        {cursorCompatText(cs)}
                     </Typography.Text>
                     <Button theme="borderless" type="tertiary" size="small" onClick={() => OpenCursorDownload()}>
                         下载
                     </Button>
-                </div>
-                <div className="status-cell">
-                    <span className={'dot ' + (cs?.useOpenAIKey ? 'on' : 'off')}/>
-                    <Typography.Text type="tertiary" size="small" ellipsis={{showTooltip: true}}>
-                        {cs?.openAIBaseUrl || '未读取'}
-                    </Typography.Text>
                 </div>
                 <div className="status-cell">
                     <span className={'dot ' + (cs?.cursorRunning ? 'on' : 'off')}/>

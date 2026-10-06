@@ -3,6 +3,8 @@ package main
 import (
 	"embed"
 
+	"CursorGate/internal/update"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -14,7 +16,7 @@ import (
 var assets embed.FS
 
 const (
-	appTitle     = "CursorGate - Cursor自定义API助手"
+	appTitle     = "CursorGate - Cursor自定义API助手 v" + update.AppVersion
 	windowWidth  = 875
 	windowHeight = 525
 )

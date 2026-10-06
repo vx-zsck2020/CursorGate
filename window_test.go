@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"CursorGate/internal/update"
 )
 
 func TestFixedWindowSize(t *testing.T) {
@@ -13,7 +15,7 @@ func TestFixedWindowSize(t *testing.T) {
 	if windowHeight != 525 {
 		t.Fatalf("windowHeight = %d, want 525", windowHeight)
 	}
-	if appTitle != "CursorGate - Cursor自定义API助手" {
+	if appTitle != "CursorGate - Cursor自定义API助手 v"+update.AppVersion {
 		t.Fatalf("appTitle = %q", appTitle)
 	}
 

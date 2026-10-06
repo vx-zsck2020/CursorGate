@@ -27,6 +27,7 @@ type Server struct {
 type Status struct {
 	Running bool   `json:"running"`
 	Addr    string `json:"addr"`
+	Port    int    `json:"port"`
 	Error   string `json:"error,omitempty"`
 }
 
@@ -44,7 +45,7 @@ func (s *Server) Start() (Status, error) {
 	ln, err := listenLoopback(prefer)
 	if err != nil {
 		s.lastErr = err.Error()
-		return Status{Addr: fmt.Sprintf("127.0.0.1:%d", prefer), Error: s.lastErr}, err
+		return Status{Addr: fmt.Sprintf("127.0.0.1:%d", prefer), Port: prefer, Error: s.lastErr}, err
 	}
 	if tcp, ok := ln.Addr().(*net.TCPAddr); ok && tcp.Port != prefer {
 		_ = s.store.SetPort(tcp.Port)
@@ -108,11 +109,16 @@ func (s *Server) Status() Status {
 }
 
 func (s *Server) statusLocked() Status {
-	addr := fmt.Sprintf("127.0.0.1:%d", s.store.Port())
+	port := s.store.Port()
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 	if s.ln == nil {
-		return Status{Running: false, Addr: addr, Error: s.lastErr}
+		return Status{Running: false, Addr: addr, Port: port, Error: s.lastErr}
 	}
-	return Status{Running: true, Addr: s.ln.Addr().String(), Error: s.lastErr}
+	if tcp, ok := s.ln.Addr().(*net.TCPAddr); ok {
+		port = tcp.Port
+		addr = s.ln.Addr().String()
+	}
+	return Status{Running: true, Addr: addr, Port: port, Error: s.lastErr}
 }
 
 func (s *Server) RoutesForTest() http.Handler {

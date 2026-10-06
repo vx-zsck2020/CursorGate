@@ -182,6 +182,7 @@ export namespace mux {
 	export class Status {
 	    running: boolean;
 	    addr: string;
+	    port: number;
 	    error?: string;
 	
 	    static createFrom(source: any = {}) {
@@ -192,6 +193,7 @@ export namespace mux {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.running = source["running"];
 	        this.addr = source["addr"];
+	        this.port = source["port"];
 	        this.error = source["error"];
 	    }
 	}

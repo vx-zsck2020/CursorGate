@@ -106,9 +106,15 @@ func TestListenFallsBackWhenPreferredBusy(t *testing.T) {
 	if !stt.Running {
 		t.Fatal("gateway should start")
 	}
+	if stt.Port == 0 {
+		t.Fatal("status should report listen port")
+	}
 	gotPort := strings.Split(stt.Addr, ":")
 	if gotPort[len(gotPort)-1] == fmt.Sprintf("%d", port) {
 		t.Fatalf("still bound to busy port %s", stt.Addr)
+	}
+	if stt.Port == port {
+		t.Fatalf("status port still busy %d", stt.Port)
 	}
 	if st.Port() == port {
 		t.Fatal("preferred busy port should not be persisted")
