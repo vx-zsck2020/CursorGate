@@ -168,7 +168,7 @@ func (a *App) SaveProvider(req SaveRequest) (ProviderView, error) {
 		Name:     req.Name,
 		BaseURL:  req.BaseURL,
 		Enabled:  req.Enabled,
-		CatchAll: false,
+		CatchAll: req.CatchAll,
 	}
 	saved, err := a.store.Upsert(p, req.APIKey)
 	if err != nil {
@@ -246,6 +246,10 @@ func (a *App) ApplyToCursor() (cursor.Status, error) {
 	}
 	if len(merged) == 0 {
 		return cursor.Status{}, fmt.Errorf("没有可同步的模型，请先拉取各 API 的模型列表")
+	}
+	wb := cursor.InspectWorkbench()
+	if !wb.Patchable {
+		return cursor.Status{}, fmt.Errorf("当前 Cursor %s 无法适配：%s", cursor.Version(), wb.Reason)
 	}
 	wasRunning := cursor.Running()
 	if wasRunning {

@@ -75,6 +75,9 @@ func Open(path string) (*Store, error) {
 		s.data.GatewayPort = 8900
 	}
 	normalizePrefs(&s.data)
+	if normalizeCatchAll(&s.data) {
+		_ = s.Save()
+	}
 	return s, nil
 }
 
@@ -85,6 +88,23 @@ func normalizePrefs(f *File) {
 	if f.CloseAction != "quit" && f.CloseAction != "tray" {
 		f.CloseAction = ""
 	}
+}
+
+func normalizeCatchAll(f *File) bool {
+	changed := false
+	seen := false
+	for i := range f.Providers {
+		if !f.Providers[i].CatchAll {
+			continue
+		}
+		if seen {
+			f.Providers[i].CatchAll = false
+			changed = true
+			continue
+		}
+		seen = true
+	}
+	return changed
 }
 
 func (s *Store) Save() error {
@@ -223,6 +243,11 @@ func (s *Store) Upsert(p Provider, newKey string) (Provider, error) {
 	}
 	if !found {
 		s.data.Providers = append(s.data.Providers, p)
+	}
+	if p.CatchAll {
+		for i := range s.data.Providers {
+			s.data.Providers[i].CatchAll = s.data.Providers[i].ID == p.ID
+		}
 	}
 	if err := s.Save(); err != nil {
 		return Provider{}, err

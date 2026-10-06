@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "notes": "首发：多 API 合流、同步到 Cursor、托盘、主题、在线更新检测。",
+  "version": "1.0.1",
+  "notes": "未知模型兜底；Cursor 适配改为探测 workbench 补丁点。",
   "url": "https://github.com/vx-zsck2020/CursorGate/releases/latest",
   "downloadUrl": "https://github.com/vx-zsck2020/CursorGate/releases/latest/download/CursorGate.exe",
   "asset": "CursorGate.exe"

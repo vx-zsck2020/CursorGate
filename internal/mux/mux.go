@@ -276,7 +276,11 @@ func MergeModels(st *store.Store) ([]string, error) {
 func Route(st *store.Store, model string) (store.Provider, string, error) {
 	list := st.List()
 	model = strings.TrimSpace(model)
+	if model == "" {
+		return store.Provider{}, "", fmt.Errorf("请求缺少 model")
+	}
 	var first *store.Provider
+	var catchAll *store.Provider
 	for i := range list {
 		p := list[i]
 		if !p.Enabled {
@@ -286,21 +290,24 @@ func Route(st *store.Store, model string) (store.Provider, string, error) {
 			cp := p
 			first = &cp
 		}
-		if model != "" {
-			for _, id := range p.Models {
-				if id == model {
-					key, err := st.DecryptKey(p)
-					return p, key, err
-				}
+		if p.CatchAll && catchAll == nil {
+			cp := p
+			catchAll = &cp
+		}
+		for _, id := range p.Models {
+			if id == model {
+				key, err := st.DecryptKey(p)
+				return p, key, err
 			}
 		}
 	}
-	if model == "" {
-		return store.Provider{}, "", fmt.Errorf("请求缺少 model")
+	fallback := catchAll
+	if fallback == nil {
+		fallback = first
 	}
-	if first != nil {
-		key, err := st.DecryptKey(*first)
-		return *first, key, err
+	if fallback != nil {
+		key, err := st.DecryptKey(*fallback)
+		return *fallback, key, err
 	}
 	return store.Provider{}, "", fmt.Errorf("未知模型 %s，且没有启用的 API", model)
 }

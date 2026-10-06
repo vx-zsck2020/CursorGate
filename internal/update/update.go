@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	AppVersion = "1.0.0"
+	AppVersion = "1.0.1"
 	RepoOwner  = "vx-zsck2020"
 	RepoName   = "CursorGate"
 	UserAgent  = "CursorGate/" + AppVersion

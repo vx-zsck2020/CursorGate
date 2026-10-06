@@ -38,6 +38,9 @@ type Status struct {
 	Compatible        bool     `json:"compatible"`
 	CompatibleVersion string   `json:"compatibleVersion"`
 	DownloadURL       string   `json:"downloadUrl"`
+	Patchable         bool     `json:"patchable"`
+	PatchApplied      bool     `json:"patchApplied"`
+	CompatNote        string   `json:"compatNote,omitempty"`
 	UseOpenAIKey      bool     `json:"useOpenAIKey"`
 	OpenAIBaseURL     string   `json:"openAIBaseUrl"`
 	Enabled           []string `json:"enabled"`
@@ -60,13 +63,17 @@ func ReadStatus() (Status, error) {
 		return Status{}, err
 	}
 	ver := Version()
+	wb := InspectWorkbench()
 	st := Status{
 		Path:              path,
 		CursorRunning:     Running(),
 		Version:           ver,
-		Compatible:        VersionCompatible(ver),
+		Compatible:        wb.Patchable,
 		CompatibleVersion: CompatibleVersion,
 		DownloadURL:       DownloadURL,
+		Patchable:         wb.Patchable,
+		PatchApplied:      wb.Applied,
+		CompatNote:        wb.Reason,
 	}
 	obj, err := readAppUser(path)
 	if err != nil {

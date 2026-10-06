@@ -77,11 +77,43 @@ func TestMergeAndRoute(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.Name != "WorkBuddy" {
-		t.Fatalf("unknown should fall to first enabled API, got %s", p.Name)
+	if p.Name != "DCT" {
+		t.Fatalf("unknown should fall to catch-all API, got %s", p.Name)
 	}
 }
 
+func TestRouteFallsBackToFirstWhenNoCatchAll(t *testing.T) {
+	dir := t.TempDir()
+	st, err := store.Open(filepath.Join(dir, "config.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := st.Upsert(store.Provider{
+		Name:    "Alpha",
+		BaseURL: "http://127.0.0.1:1/v1",
+		Enabled: true,
+		Models:  []string{"alpha-1"},
+	}, "sk-a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = st.Upsert(store.Provider{
+		Name:    "Beta",
+		BaseURL: "http://127.0.0.1:2/v1",
+		Enabled: true,
+		Models:  []string{"beta-1"},
+	}, "sk-b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, _, err := Route(st, "unknown-new")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.ID != first.ID {
+		t.Fatalf("no catch-all should use first enabled API, got %s", p.Name)
+	}
+}
 func TestListenFallsBackWhenPreferredBusy(t *testing.T) {
 	busy, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {

@@ -2,13 +2,14 @@
 
 给 Cursor 管多条自定义 OpenAI 兼容 API 的本机小工具。
 
-Cursor 原生只有一个 `openAIBaseUrl`。本工具在本机起合流入口（默认 `127.0.0.1:8900`，占用自动换口），按模型 id 分流到各上游，并把聚合后的模型列表写进 Cursor 的 `state.vscdb`。适配 **Cursor 3.23.23**。
+Cursor 原生只有一个 `openAIBaseUrl`。本工具在本机起合流入口（默认 `127.0.0.1:8900`，占用自动换口），按模型 id 分流到各上游，并把聚合后的模型列表写进 Cursor 的 `state.vscdb`。已在 **Cursor 3.23.23** 验证；是否适配看本机 `workbench` 能否写入官方模型刷新短路，不单看版本号。
 
 仓库：<https://github.com/vx-zsck2020/CursorGate>
 
 ## 能做什么
 
 - 同时管理多条 OpenAI 兼容 API（名称、Base URL、密钥用 Windows DPAPI 加密）
+- 可指定一条「未知模型兜底」API；未命中模型 id 时走它，否则回退到第一条启用的 API
 - 拉取并合流模型列表，同步到 Cursor 选择器
 - 点「同步到 Cursor」会自动退出并重启 Cursor
 - 「一键恢复」还原最近状态库备份，并撤回官方模型刷新短路

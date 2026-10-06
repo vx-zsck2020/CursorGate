@@ -29,6 +29,7 @@ const emptyForm = {
     baseUrl: '',
     apiKey: '',
     enabled: true,
+    catchAll: false,
 }
 
 function applyTheme(theme: string) {
@@ -47,10 +48,17 @@ function gatewayPort(addr?: string): string {
 function cursorCompatText(cs: Dashboard['cursor'] | undefined): string {
     const current = cs?.version || '未知'
     const target = cs?.compatibleVersion || '3.23.23'
-    if (cs?.compatible) {
-        return current === target ? `Cursor ${current} 已适配` : `Cursor ${current} 已适配（${target}）`
+    if (cs?.patchApplied) {
+        return `Cursor ${current} 已短路官方刷新`
     }
-    return `Cursor ${current} 未适配（已适配 ${target}）`
+    if (cs?.compatible || cs?.patchable) {
+        if (current === target) {
+            return `Cursor ${current} 可适配`
+        }
+        return `Cursor ${current} 可适配（验证于 ${target}）`
+    }
+    const note = cs?.compatNote ? `：${cs.compatNote}` : `（已验证 ${target}）`
+    return `Cursor ${current} 未适配${note}`
 }
 
 function App() {
@@ -61,7 +69,7 @@ function App() {
     const [theme, setThemeState] = useState('dark')
     const [askClose, setAskClose] = useState(false)
     const [rememberClose, setRememberClose] = useState(false)
-    const [appVer, setAppVer] = useState({current: '1.0.0', latest: '', available: false, error: '', notes: '', url: ''})
+    const [appVer, setAppVer] = useState({current: '1.0.1', latest: '', available: false, error: '', notes: '', url: ''})
 
     const providers = dash?.providers ?? []
     const current = useMemo(
@@ -77,7 +85,7 @@ function App() {
         applyTheme(nextTheme)
         if (next.app) {
             setAppVer({
-                current: next.app.current || '1.0.0',
+                current: next.app.current || '1.0.1',
                 latest: next.app.latest || '',
                 available: !!next.app.available,
                 error: next.app.error || '',
@@ -95,6 +103,7 @@ function App() {
                 baseUrl: p.baseUrl,
                 apiKey: '',
                 enabled: p.enabled,
+                catchAll: !!p.catchAll,
             })
         } else if (!id) {
             setForm({...emptyForm})
@@ -111,7 +120,7 @@ function App() {
                 applyTheme(nextTheme)
                 if (next.app) {
                     setAppVer({
-                        current: next.app.current || '1.0.0',
+                        current: next.app.current || '1.0.1',
                         latest: next.app.latest || '',
                         available: !!next.app.available,
                         error: next.app.error || '',
@@ -125,7 +134,7 @@ function App() {
         const offUpdate = EventsOn('cursorgate:update', (st: any) => {
             if (!st) return
             setAppVer({
-                current: st.current || '1.0.0',
+                current: st.current || '1.0.1',
                 latest: st.latest || '',
                 available: !!st.available,
                 error: st.error || '',
@@ -146,7 +155,7 @@ function App() {
 
     function startNew() {
         setSelected('')
-        setForm({...emptyForm, enabled: true})
+        setForm({...emptyForm, enabled: true, catchAll: false})
     }
 
     function pick(p: ProviderView) {
@@ -157,6 +166,7 @@ function App() {
             baseUrl: p.baseUrl,
             apiKey: '',
             enabled: p.enabled,
+            catchAll: !!p.catchAll,
         })
     }
 
@@ -169,7 +179,7 @@ function App() {
                 baseUrl: form.baseUrl,
                 apiKey: form.apiKey,
                 enabled: form.enabled,
-                catchAll: false,
+                catchAll: form.catchAll,
             })
             Toast.success('已保存')
             await reload(saved.id)
@@ -344,6 +354,9 @@ function App() {
                                     <Typography.Text type="tertiary" size="small">
                                         {p.online ? '已连接' : '未连接'} · {p.enabled ? '启用' : '停用'} · {p.models?.length ?? 0}
                                     </Typography.Text>
+                                    {p.catchAll ? (
+                                        <Typography.Text type="tertiary" size="small">兜底</Typography.Text>
+                                    ) : null}
                                 </Space>
                             </button>
                         ))}
@@ -411,6 +424,11 @@ function App() {
                                         onChange={v => setForm({...form, enabled: v})}
                                     />
                                     <Typography.Text>启用</Typography.Text>
+                                    <Switch
+                                        checked={form.catchAll}
+                                        onChange={v => setForm({...form, catchAll: v})}
+                                    />
+                                    <Typography.Text>未知模型兜底</Typography.Text>
                                 </Space>
                                 <Space wrap>
                                     <Button theme="solid" type="primary" loading={busy === 'save'} onClick={save}>

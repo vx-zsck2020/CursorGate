@@ -21,6 +21,59 @@ func workbenchFiles(installDir string) []string {
 	}
 }
 
+type WorkbenchStatus struct {
+	InstallDir string   `json:"installDir,omitempty"`
+	Patchable  bool     `json:"patchable"`
+	Applied    bool     `json:"applied"`
+	Missing    []string `json:"missing,omitempty"`
+	Reason     string   `json:"reason,omitempty"`
+}
+
+func InspectWorkbench() WorkbenchStatus {
+	dir := InstallDir()
+	if dir == "" {
+		return WorkbenchStatus{Reason: "找不到 Cursor 安装目录"}
+	}
+	return inspectWorkbenchDir(dir)
+}
+
+func inspectWorkbenchDir(dir string) WorkbenchStatus {
+	st := WorkbenchStatus{InstallDir: dir}
+	files := workbenchFiles(dir)
+	applied := 0
+	unpatched := 0
+	for _, path := range files {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			st.Missing = append(st.Missing, filepath.Base(path))
+			continue
+		}
+		src := string(raw)
+		if skipRefreshApplied(src) {
+			applied++
+			continue
+		}
+		if strings.Count(src, refreshNeedle) == 1 {
+			unpatched++
+			continue
+		}
+		st.Reason = filepath.Base(path) + " 找不到 refreshDefaultModels 补丁点"
+		return st
+	}
+	if len(st.Missing) > 0 {
+		st.Reason = "找不到 workbench 文件"
+		return st
+	}
+	st.Patchable = true
+	st.Applied = unpatched == 0 && applied == len(files)
+	if st.Applied {
+		st.Reason = "已短路官方模型刷新"
+		return st
+	}
+	st.Reason = "可写入官方模型刷新短路"
+	return st
+}
+
 func skipRefreshApplied(src string) bool {
 	return strings.Contains(src, "useOpenAIKey===!0){this._aiSettingsService.handleAvailableModelsChange();return}if(this.trySeedCatalogFromOwnKey()")
 }

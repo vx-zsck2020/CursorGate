@@ -8,6 +8,9 @@ export namespace cursor {
 	    downloadUrl: string;
 	    useOpenAIKey: boolean;
 	    openAIBaseUrl: string;
+	    patchable: boolean;
+	    patchApplied: boolean;
+	    compatNote: string;
 	    enabled: string[];
 	    disabled: string[];
 	    userAdded: string[];
@@ -26,6 +29,9 @@ export namespace cursor {
 	        this.downloadUrl = source["downloadUrl"];
 	        this.useOpenAIKey = source["useOpenAIKey"];
 	        this.openAIBaseUrl = source["openAIBaseUrl"];
+	        this.patchable = source["patchable"];
+	        this.patchApplied = source["patchApplied"];
+	        this.compatNote = source["compatNote"];
 	        this.enabled = source["enabled"];
 	        this.disabled = source["disabled"];
 	        this.userAdded = source["userAdded"];
