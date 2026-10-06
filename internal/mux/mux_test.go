@@ -29,7 +29,7 @@ func TestMergeAndRoute(t *testing.T) {
 	}
 	wb, err := st.Upsert(store.Provider{
 		Name:    "WorkBuddy",
-		BaseURL: "http://127.0.0.1:8899/v1",
+		BaseURL: "http://127.0.0.1:18001/v1",
 		Enabled: true,
 		Models:  []string{"deepseek-v4.1-flash", "hy3", "hy4-preview-f", "x-ai/skip-me"},
 	}, "sk-wb-test")
@@ -144,7 +144,7 @@ func TestModelsAuth(t *testing.T) {
 	}
 	_, err = st.Upsert(store.Provider{
 		Name:    "WB",
-		BaseURL: "http://127.0.0.1:8899/v1",
+		BaseURL: "http://127.0.0.1:18001/v1",
 		Enabled: true,
 		Models:  []string{"hy3"},
 	}, "sk-ok")

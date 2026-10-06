@@ -1,6 +1,6 @@
 //go:build windows
 
-package main
+package native
 
 import (
 	"syscall"
@@ -39,6 +39,12 @@ type winRect struct {
 	Left, Top, Right, Bottom int32
 }
 
+var (
+	windowTitle  string
+	windowWidth  = 875
+	windowHeight = 525
+)
+
 func utf16Ptr(s string) *uint16 {
 	p, _ := syscall.UTF16PtrFromString(s)
 	return p
@@ -47,7 +53,7 @@ func utf16Ptr(s string) *uint16 {
 func findAppWindow() uintptr {
 	hwnd, _, _ := procFindWindowW.Call(
 		uintptr(unsafe.Pointer(utf16Ptr("wailsWindow"))),
-		uintptr(unsafe.Pointer(utf16Ptr(appTitle))),
+		uintptr(unsafe.Pointer(utf16Ptr(windowTitle))),
 	)
 	if hwnd != 0 {
 		return hwnd
@@ -151,7 +157,14 @@ func applyOuterSize(hwnd uintptr, outerW, outerH int) {
 	)
 }
 
-func lockClientSize() {
+func LockClientSize(title string, wantW, wantH int) {
+	windowTitle = title
+	if wantW > 0 {
+		windowWidth = wantW
+	}
+	if wantH > 0 {
+		windowHeight = wantH
+	}
 	hwnd := findAppWindow()
 	if hwnd == 0 {
 		time.Sleep(80 * time.Millisecond)

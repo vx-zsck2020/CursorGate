@@ -17,3 +17,7 @@ CursorGate.new.exe
 # 本地技术文档，不上 GitHub
 2026-10-06_技术文档-Cursor自定义API-report.md
 2026-10-06_技术文档-Go-React-Semi桌面小工具技术栈.md
+
+# 用户 API 配置只存在本机 %APPDATA%\CursorGate\，禁止入库
+config.json
+**/config.json

@@ -113,7 +113,7 @@ func fetchLatestRelease() (*ghRelease, error) {
 }
 
 func fetchManifest() (manifest, error) {
-	url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/latest.json", RepoOwner, RepoName)
+	url := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/main/internal/update/latest.json", RepoOwner, RepoName)
 	raw, code, err := get(url)
 	if err != nil {
 		return manifest{}, err

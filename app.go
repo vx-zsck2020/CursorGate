@@ -9,6 +9,7 @@ import (
 
 	"CursorGate/internal/cursor"
 	"CursorGate/internal/mux"
+	"CursorGate/internal/native"
 	"CursorGate/internal/store"
 	"CursorGate/internal/update"
 	"CursorGate/internal/upstream"
@@ -85,17 +86,20 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) domReady(ctx context.Context) {
-	lockClientSize()
+	native.LockClientSize(appTitle, windowWidth, windowHeight)
 	w, h := runtime.WindowGetSize(ctx)
 	if w > 0 && h > 0 {
 		runtime.WindowSetMinSize(ctx, w, h)
 		runtime.WindowSetMaxSize(ctx, w, h)
 	}
-	startTray()
+	native.StartTray(appTitle, native.TrayHooks{
+		Show: a.ShowWindow,
+		Quit: func() { _ = a.QuitApp() },
+	})
 }
 
 func (a *App) shutdown(ctx context.Context) {
-	destroyTray()
+	native.DestroyTray()
 	if a.mux != nil {
 		_ = a.mux.Stop()
 	}
@@ -370,7 +374,7 @@ func (a *App) QuitApp() error {
 	a.mu.Lock()
 	a.forceQuit = true
 	a.mu.Unlock()
-	destroyTray()
+	native.DestroyTray()
 	if a.ctx != nil {
 		runtime.Quit(a.ctx)
 	}

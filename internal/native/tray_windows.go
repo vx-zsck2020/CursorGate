@@ -1,12 +1,10 @@
 //go:build windows
 
-package main
+package native
 
 import (
 	"syscall"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 var (
@@ -67,15 +65,23 @@ type point struct {
 	X, Y int32
 }
 
+type TrayHooks struct {
+	Show func()
+	Quit func()
+}
+
 var (
 	trayHWND     uintptr
 	trayIcon     uintptr
 	trayPrevProc uintptr
 	trayNID      notifyIconData
 	trayReady    bool
+	trayHooks    TrayHooks
 )
 
-func startTray() {
+func StartTray(title string, hooks TrayHooks) {
+	windowTitle = title
+	trayHooks = hooks
 	hwnd := findAppWindow()
 	if hwnd == 0 {
 		return
@@ -89,7 +95,7 @@ func startTray() {
 		HIcon:            icon,
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
-	copyUTF16(nid.SzTip[:], appTitle)
+	copyUTF16(nid.SzTip[:], title)
 	ok, _, _ := procShellNotifyIconW.Call(nimAdd, uintptr(unsafe.Pointer(&nid)))
 	if ok == 0 {
 		return
@@ -103,7 +109,7 @@ func startTray() {
 	trayReady = true
 }
 
-func destroyTray() {
+func DestroyTray() {
 	if !trayReady {
 		return
 	}
@@ -135,14 +141,14 @@ func trayWndProc(hwnd, msg, wParam, lParam uintptr) uintptr {
 		case trayOpenID:
 			showFromTray()
 		case trayExitID:
-			if appRef != nil {
-				_ = appRef.QuitApp()
+			if trayHooks.Quit != nil {
+				trayHooks.Quit()
 			}
 		}
 		return 0
 	case wmDestroy:
 		prev := trayPrevProc
-		destroyTray()
+		DestroyTray()
 		if prev != 0 {
 			r, _, _ := procCallWindowProcW.Call(prev, hwnd, msg, wParam, lParam)
 			return r
@@ -157,11 +163,9 @@ func trayWndProc(hwnd, msg, wParam, lParam uintptr) uintptr {
 }
 
 func showFromTray() {
-	if appRef == nil || appRef.ctx == nil {
-		return
+	if trayHooks.Show != nil {
+		trayHooks.Show()
 	}
-	runtime.WindowShow(appRef.ctx)
-	runtime.WindowUnminimise(appRef.ctx)
 }
 
 func showTrayMenu(hwnd uintptr) {

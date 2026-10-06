@@ -388,7 +388,7 @@ function App() {
                                 <label className="field">
                                     <Typography.Text type="tertiary" size="small">Base URL</Typography.Text>
                                     <Input
-                                        placeholder="http://127.0.0.1:8899/v1"
+                                        placeholder="https://api.example.com/v1"
                                         value={form.baseUrl}
                                         showClear
                                         onChange={v => setForm({...form, baseUrl: v})}
