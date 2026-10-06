@@ -1,0 +1,14 @@
+build/bin
+.workbuddy-ai
+node_modules
+frontend/dist
+frontend/wailsjs/runtime/runtime.js.bak
+_recon
+*.exe
+*.exe.part
+CursorGate.new.exe
+.idea
+.vscode
+.DS_Store
+*.log
+*.tmp
