@@ -36,6 +36,20 @@ Cursor 原生只有一个 `openAIBaseUrl`。本工具在本机起合流入口（
 
 Wails v2 + React 18 + `@douyinfe/semi-ui`
 
+## 目录
+
+```
+CursorGate/
+  app.go / main.go / tray_windows.go / window_*.go
+  internal/          合流、Cursor 状态库、密钥、更新
+  frontend/          React 18 + Semi
+  build/windows/     清单、图标、安装器
+  .github/workflows  tag v* 自动发 exe
+  latest.json        无 Release 时的更新回退
+```
+
+本地两份 `2026-10-06_技术文档-*.md` 只留本机，不进仓库。
+
 ## 开发
 
 ```bash

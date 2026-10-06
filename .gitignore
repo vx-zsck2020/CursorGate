@@ -3,6 +3,7 @@ build/bin
 node_modules
 frontend/dist
 frontend/wailsjs/runtime/runtime.js.bak
+frontend/package.json.md5
 _recon
 *.exe
 *.exe.part
@@ -12,3 +13,7 @@ CursorGate.new.exe
 .DS_Store
 *.log
 *.tmp
+
+# 本地技术文档，不上 GitHub
+2026-10-06_技术文档-Cursor自定义API-report.md
+2026-10-06_技术文档-Go-React-Semi桌面小工具技术栈.md
